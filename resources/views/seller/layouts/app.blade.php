@@ -82,7 +82,7 @@
                     @yield('panel_content')
 				</div>
 				<div class="bg-white text-center py-3 px-15px px-lg-25px mt-auto border-sm-top">
-					<p class="mb-0">&copy; {{ get_setting('site_name') }} v{{ get_setting('current_version') }}</p>
+					<p class="mb-0">&copy; {{ get_setting('site_name') }} v{{ get_setting('current_version') }} | Developed by <a href="https://www.softsasi.com" target="_blank" class="fw-700 text-primary">Softsasi</a></p>
 				</div>
 			</div><!-- .aiz-main-content -->
 		</div><!-- .aiz-content-wrapper -->
