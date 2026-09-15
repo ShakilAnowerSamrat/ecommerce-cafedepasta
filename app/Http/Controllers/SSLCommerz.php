@@ -21,19 +21,17 @@ class SSLCommerz
 
     public function __construct()
     {
-        if(Session::has('payment_type')){
-            # IF SANDBOX TRUE, THEN IT WILL CONNECT WITH SSLCOMMERZ SANDBOX (TEST) SYSTEM
-            if(BusinessSetting::where('type', 'sslcommerz_sandbox')->first()->value == 1){
-                define("SSLCZ_IS_SANDBOX", true);
-            }
-            else{
-                define("SSLCZ_IS_SANDBOX", false);
-            }
+        $sandbox_setting = BusinessSetting::where('type', 'sslcommerz_sandbox')->first();
+        $is_sandbox = ($sandbox_setting && $sandbox_setting->value == 1);
 
-            $this->setSSLCommerzMode((SSLCZ_IS_SANDBOX) ? 1 : 0);
-            $this->store_id = env('SSLCZ_STORE_ID');
-            $this->store_pass = env('SSLCZ_STORE_PASSWD');
+        if(!defined("SSLCZ_IS_SANDBOX")){
+            define("SSLCZ_IS_SANDBOX", $is_sandbox);
         }
+
+        $this->setSSLCommerzMode((SSLCZ_IS_SANDBOX) ? 1 : 0);
+        $this->store_id = env('SSLCZ_STORE_ID');
+        $this->store_pass = env('SSLCZ_STORE_PASSWD');
+
         $this->sslc_submit_url = "https://" . $this->sslc_mode . ".sslcommerz.com/gwprocess/v3/api.php";
         $this->sslc_validation_url = "https://" . $this->sslc_mode . ".sslcommerz.com/validator/api/validationserverAPI.php";
     }

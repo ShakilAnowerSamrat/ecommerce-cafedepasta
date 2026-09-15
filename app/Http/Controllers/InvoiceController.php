@@ -101,8 +101,9 @@ class InvoiceController extends Controller
             $is_admin = in_array($user->user_type, ['admin', 'staff']);
             $is_owner = ($order->user_id == $user->id);
             $is_seller = ($user->user_type == 'seller' && ($order->seller_id == $user->id || $order->orderDetails()->where('seller_id', $user->id)->exists()));
+            $is_delivery_boy = ($user->user_type == 'delivery_boy' && $order->assign_delivery_boy == $user->id);
 
-            if (!$is_admin && !$is_owner && !$is_seller) {
+            if (!$is_admin && !$is_owner && !$is_seller && !$is_delivery_boy) {
                 abort(403, 'Unauthorized access to invoice.');
             }
         } else {
