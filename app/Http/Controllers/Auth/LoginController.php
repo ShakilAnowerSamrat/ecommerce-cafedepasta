@@ -314,6 +314,7 @@ class LoginController extends Controller
         $this->guard()->logout();
 
         $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return $this->loggedOut($request) ?: redirect()->route($redirect_route);
     }

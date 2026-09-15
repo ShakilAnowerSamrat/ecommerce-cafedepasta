@@ -1,2 +1,4 @@
 User-agent: *
 Disallow:
+
+Sitemap: https://bapjan.com/sitemap.xml

@@ -167,7 +167,12 @@ Route::post('/currency', [CurrencyController::class, 'changeCurrency'])->name('c
 
 
 Route::get('/sitemap.xml', function () {
-    return base_path('sitemap.xml');
+    if (file_exists(base_path('sitemap.xml'))) {
+        return response()->file(base_path('sitemap.xml'), [
+            'Content-Type' => 'application/xml; charset=UTF-8'
+        ]);
+    }
+    abort(404);
 });
 
 // Classified Product

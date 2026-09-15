@@ -52,7 +52,73 @@
     <meta property="product:retailer_item_id" content="{{ $detailedProduct->slug }}">
     <meta property="product:price:currency"
         content="{{ get_system_default_currency()->code }}" />
-    <meta property="fb:app_id" content="{{ env('FACEBOOK_PIXEL_ID') }}">
+    <meta property="fb:app_id" content="{{ env('FACEBOOK_PIXEL_ID', '2355381278153504') }}">
+
+    <!-- JSON-LD Schema.org Structured Data for Google, Bing & LLMs -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "{{ addslashes($detailedProduct->getTranslation('name')) }}",
+      "image": [
+        "{{ uploaded_asset($detailedProduct->thumbnail_img) }}"
+      ],
+      "description": "{{ addslashes(strip_tags($detailedProduct->getTranslation('description') ?? $detailedProduct->meta_description)) }}",
+      "sku": "cdp-{{ $detailedProduct->id }}",
+      "brand": {
+        "@type": "Brand",
+        "name": "{{ $detailedProduct->brand ? addslashes($detailedProduct->brand->name) : 'Cafe De Pasta' }}"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ route('product', $detailedProduct->slug) }}",
+        "priceCurrency": "BDT",
+        "price": "{{ number_format($detailedProduct->unit_price, 2, '.', '') }}",
+        "priceValidUntil": "{{ date('Y-12-31') }}",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": "{{ $qty > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+        "seller": {
+          "@type": "Organization",
+          "name": "Cafe De Pasta"
+        }
+      }
+      @if($detailedProduct->rating > 0)
+      ,"aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ $detailedProduct->rating }}",
+        "reviewCount": "{{ count($detailedProduct->reviews) > 0 ? count($detailedProduct->reviews) : 1 }}"
+      }
+      @endif
+    }
+    </script>
+
+    <!-- BreadcrumbList Schema for Rich Results & LLMs -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [{
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "{{ route('home') }}"
+      }
+      @if($detailedProduct->category != null)
+      ,{
+        "@type": "ListItem",
+        "position": 2,
+        "name": "{{ addslashes($detailedProduct->category->getTranslation('name')) }}",
+        "item": "{{ route('products.category', $detailedProduct->category->slug) }}"
+      }
+      @endif
+      ,{
+        "@type": "ListItem",
+        "position": {{ $detailedProduct->category != null ? 3 : 2 }},
+        "name": "{{ addslashes($detailedProduct->getTranslation('name')) }}",
+        "item": "{{ route('product', $detailedProduct->slug) }}"
+      }]
+    }
+    </script>
 @endsection
 
 @section('content')

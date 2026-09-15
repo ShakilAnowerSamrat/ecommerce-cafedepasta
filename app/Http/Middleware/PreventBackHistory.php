@@ -17,7 +17,7 @@ class PreventBackHistory
     public function handle(Request $request, Closure $next)
     {
         $headers = [
-            'Cache-Control' => 'nocache, no-store, max-age=0, must-revalidate',
+            'Cache-Control' => 'no-cache, no-store, max-age=0, must-revalidate',
             'Pragma'        => 'no-cache',
             'Expires'       => 'Sat, 26 Jul 1997 05:00:00 GMT'
         ];

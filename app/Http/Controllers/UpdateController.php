@@ -35,15 +35,44 @@ class UpdateController extends Controller
                 if (!is_dir($dir))
                     mkdir($dir, 0777, true);
 
-                $path = Upload::findOrFail($request->update_zip)->file_name;
+                $upload = Upload::findOrFail($request->update_zip);
+                $path = $upload->file_name;
+                $full_path = base_path('public/' . $path);
 
-                //Unzip uploaded update file and remove zip file.
+                if (strtolower($upload->extension) !== 'zip' || !file_exists($full_path)) {
+                    flash(translate('Invalid update package file format.'))->error();
+                    return back();
+                }
+
+                if (env('ALLOW_WEB_UPDATES', true) === false || env('ALLOW_WEB_UPDATES') === 'false') {
+                    flash(translate('Web updates are disabled on this server for security.'))->error();
+                    return back();
+                }
+
                 $zip = new ZipArchive;
-                $res = $zip->open(base_path('public/' . $path));
+                $res = $zip->open($full_path);
 
                 if ($res === true) {
+                    // Security check: Prevent Zip Slip & block .env overwriting
+                    for ($i = 0; $i < $zip->numFiles; $i++) {
+                        $entry_name = $zip->getNameIndex($i);
+                        if (str_contains($entry_name, '..') || str_starts_with($entry_name, '/') || str_starts_with($entry_name, '\\')) {
+                            $zip->close();
+                            @unlink($full_path);
+                            flash(translate('Malicious zip file path traversal detected.'))->error();
+                            return back();
+                        }
+                        if (basename($entry_name) === '.env') {
+                            $zip->close();
+                            @unlink($full_path);
+                            flash(translate('Overwriting environment configuration via update is blocked.'))->error();
+                            return back();
+                        }
+                    }
+
                     $res = $zip->extractTo(base_path());
                     $zip->close();
+                    @unlink($full_path);
                 } else {
                     flash(translate('Could not open the updates zip file.'))->error();
                     return back();
