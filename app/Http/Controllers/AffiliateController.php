@@ -299,7 +299,7 @@ class AffiliateController extends Controller
         if($request->type == 'Today') {
             $query->whereDate('created_at', Carbon::today());
         } else if($request->type == '7' || $request->type ==  '30') {
-            $query->whereRaw('created_at  <= NOW() AND created_at >= DATE_SUB(created_at, INTERVAL '. $request->type .' DAY)');
+            $query->whereRaw('created_at  <= NOW() AND created_at >= DATE_SUB(created_at, INTERVAL ? DAY)', [(int)$request->type]);
         }
         $query->where('affiliate_user_id', Auth::user()->id);
         $affliate_stats = $query->first();

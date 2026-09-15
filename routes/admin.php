@@ -60,7 +60,7 @@ use App\Http\Controllers\ZoneController;
   |
  */
 //Update Routes
-Route::controller(UpdateController::class)->group(function () {
+Route::controller(UpdateController::class)->middleware(['auth', 'admin', 'prevent-back-history'])->group(function () {
     Route::post('/update', 'step0')->name('update');
     Route::get('/update/step1', 'step1')->name('update.step1');
     Route::get('/update/step2', 'step2')->name('update.step2');

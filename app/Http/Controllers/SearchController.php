@@ -91,10 +91,10 @@ class SearchController extends Controller
             $case2 = '%' . $query . '%';
 
             $products->orderByRaw("CASE 
-                WHEN name LIKE '$case1' THEN 1 
-                WHEN name LIKE '$case2' THEN 2 
+                WHEN name LIKE ? THEN 1 
+                WHEN name LIKE ? THEN 2 
                 ELSE 3 
-                END");
+                END", [$case1, $case2]);
         }
 
         switch ($sort_by) {
@@ -199,10 +199,10 @@ class SearchController extends Controller
         $case2 = '%' . $query . '%';
 
         $products_query->orderByRaw("CASE 
-                WHEN name LIKE '$case1' THEN 1 
-                WHEN name LIKE '$case2' THEN 2 
+                WHEN name LIKE ? THEN 1 
+                WHEN name LIKE ? THEN 2 
                 ELSE 3 
-                END");
+                END", [$case1, $case2]);
         $products = $products_query->limit(3)->get();
 
         $categories = Category::where('name', 'like', '%' . $query . '%')->get()->take(3);

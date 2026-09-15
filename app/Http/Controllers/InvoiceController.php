@@ -94,9 +94,21 @@ class InvoiceController extends Controller
         // }];
         // mpdf config will be used in 4th params of loadview
 
-        $config = [];
-
         $order = Order::findOrFail($id);
+
+        $user = auth()->user();
+        if ($user) {
+            $is_admin = in_array($user->user_type, ['admin', 'staff']);
+            $is_owner = ($order->user_id == $user->id);
+            $is_seller = ($user->user_type == 'seller' && ($order->seller_id == $user->id || $order->orderDetails()->where('seller_id', $user->id)->exists()));
+
+            if (!$is_admin && !$is_owner && !$is_seller) {
+                abort(403, 'Unauthorized access to invoice.');
+            }
+        } else {
+            abort(401);
+        }
+
         return PDF::loadView('backend.invoices.invoice', [
             'order' => $order,
             'font_family' => $font_family,

@@ -2310,3 +2310,16 @@ if (!function_exists('timezones')) {
         );
     }
 }
+
+if (!function_exists('clean_html')) {
+    function clean_html($string)
+    {
+        if (empty($string)) {
+            return '';
+        }
+        $allowed = '<p><br><b><strong><i><em><u><ul><ol><li><span>';
+        $stripped = strip_tags($string, $allowed);
+        $cleaned = preg_replace('/<([a-z][a-z0-9]*)[^>]*?(\s+(?:on\w+|href\s*=\s*["\']javascript:)[^>]*)>/i', '<$1>', $stripped);
+        return $cleaned;
+    }
+}

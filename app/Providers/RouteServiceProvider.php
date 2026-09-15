@@ -62,7 +62,7 @@ class RouteServiceProvider extends ServiceProvider
     
      $this->mapPaytmRoutes();
     
-     $this->mapPosRoutes();
+     // $this->mapPosRoutes();
     
      $this->mapSellerPackageRoutes();
     

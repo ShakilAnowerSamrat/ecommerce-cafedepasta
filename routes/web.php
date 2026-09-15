@@ -61,7 +61,7 @@ use App\Http\Controllers\Payment\PiprapayController;
   |
  */
 
-Route::controller(DemoController::class)->group(function () {
+Route::controller(DemoController::class)->middleware(['auth', 'admin'])->group(function () {
     Route::get('/demo/cron_1', 'cron_1');
     Route::get('/demo/cron_2', 'cron_2');
     Route::get('/convert_assets', 'convert_assets');
@@ -77,7 +77,7 @@ Route::get('/refresh-csrf', function () {
 });
 
 // AIZ Uploader
-Route::controller(AizUploadController::class)->group(function () {
+Route::controller(AizUploadController::class)->middleware('auth')->group(function () {
     Route::post('/aiz-uploader', 'show_uploader');
     Route::post('/aiz-uploader/upload', 'upload');
     Route::get('/aiz-uploader/get_uploaded_files', 'get_uploaded_files');

@@ -5,6 +5,13 @@
 
     RewriteEngine On
 
+    # Block access to hidden files and directories (e.g. .git, .env)
+    RewriteRule ^(\.well-known) - [L]
+    RewriteRule (^|/)\. - [F,L]
+
+    # Block direct HTTP access to sensitive project directories
+    RewriteRule ^(database|resources|tests|storage/logs|storage/framework|bootstrap/cache) - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -20,14 +27,19 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Disable index view
+# Disable directory browsing
 Options -Indexes
 
-# Hide a specific file
-<Files ~ "\.(env|json|config.js|md|gitignore|gitattributes|lock)$">
-    Order allow,deny
-    Deny from all
-</Files>
+# Block sensitive file types
+<FilesMatch "\.(env|sql|log|bak|swp|json|lock|md|yml|yaml|ini|config|sh|bat|dist)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
 
 ## EXPIRES CACHING ##
 <IfModule mod_expires.c>

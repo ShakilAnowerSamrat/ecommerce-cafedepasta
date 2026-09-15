@@ -219,7 +219,7 @@ class CartController extends Controller
             'price' => $price,
             'tax' => $tax,
             'shipping_cost' => 0,
-            'quantity' => DB::raw("quantity + $request->quantity")
+            'quantity' => DB::raw("quantity + " . (int)$request->quantity)
         ]);
 
         if (\App\Utility\NagadUtility::create_balance_reference($request->cost_matrix) == false) {

@@ -35,29 +35,10 @@ class FileUploadController extends Controller
 
         try {
             $image = $request->image;
-            $request->filename;
-            $realImage = base64_decode($image);
+            $raw_filename = basename($request->filename ?? 'image.jpg');
+            $extension = strtolower(pathinfo($raw_filename, PATHINFO_EXTENSION));
 
-            $dir = public_path('uploads/all');
-            $full_path = "$dir/$request->filename";
-
-            $file_put = file_put_contents($full_path, $realImage); // int or false
-
-            if ($file_put == false) {
-                return response()->json([
-                    'result' => false,
-                    'message' => "File uploading error",
-                    'path' => ""
-                ]);
-            }
-
-
-            $upload = new Upload;
-            $extension = strtolower(File::extension($full_path));
-            $size = File::size($full_path);
-
-            if (!isset($type[$extension])) {
-                unlink($full_path);
+            if (empty($extension) || !isset($type[$extension])) {
                 return response()->json([
                     'result' => false,
                     'message' => "Only image can be uploaded",
@@ -65,25 +46,30 @@ class FileUploadController extends Controller
                 ]);
             }
 
-
-            $upload->file_original_name = null;
-            $arr = explode('.', File::name($full_path));
-            for ($i = 0; $i < count($arr) - 1; $i++) {
-                if ($i == 0) {
-                    $upload->file_original_name .= $arr[$i];
-                } else {
-                    $upload->file_original_name .= "." . $arr[$i];
-                }
+            $realImage = base64_decode($image);
+            if ($realImage === false) {
+                return response()->json([
+                    'result' => false,
+                    'message' => translate("Invalid image data"),
+                    'path' => ""
+                ]);
             }
 
-            //unlink and upload again with new name
-            unlink($full_path);
+            if ($extension == 'svg' && class_exists('enshrined\svgSanitize\Sanitizer')) {
+                $sanitizer = new \enshrined\svgSanitize\Sanitizer();
+                $realImage = $sanitizer->sanitize($realImage);
+            }
+
+            $dir = public_path('uploads/all');
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
             $newFileName = rand(10000000000, 9999999999) . date("YmdHis") . "." . $extension;
             $newFullPath = "$dir/$newFileName";
 
             $file_put = file_put_contents($newFullPath, $realImage);
-
-            if ($file_put == false) {
+            if ($file_put === false) {
                 return response()->json([
                     'result' => false,
                     'message' => "Uploading error",
@@ -91,6 +77,7 @@ class FileUploadController extends Controller
                 ]);
             }
 
+            $size = filesize($newFullPath);
             $newPath = "uploads/all/$newFileName";
 
             if (env('FILESYSTEM_DRIVER') == 's3') {
@@ -98,6 +85,8 @@ class FileUploadController extends Controller
                 unlink(base_path('public/') . $newPath);
             }
 
+            $upload = new Upload;
+            $upload->file_original_name = pathinfo($raw_filename, PATHINFO_FILENAME);
             $upload->extension = $extension;
             $upload->file_name = $newPath;
             $upload->user_id = $user->id;

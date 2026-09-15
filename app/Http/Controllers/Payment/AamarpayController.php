@@ -131,6 +131,29 @@ class AamarpayController extends Controller
     public function success(Request $request){
         $payment_type = $request->opt_a;
 
+        if ($request->pay_status != 'Successful' || empty($request->mer_txnid)) {
+            flash(translate('Payment failed or unverified.'))->error();
+            return redirect()->route('cart');
+        }
+
+        // Server-side verification with Aamarpay API
+        $verify_url = (get_setting('aamarpay_sandbox') == 1)
+            ? 'https://sandbox.aamarpay.com/api/v1/trxcheck/request.php'
+            : 'https://secure.aamarpay.com/api/v1/trxcheck/request.php';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $verify_url . '?request_id=' . urlencode($request->mer_txnid) . '&store_id=' . urlencode(env('AAMARPAY_STORE_ID')) . '&signature_key=' . urlencode(env('AAMARPAY_SIGNATURE_KEY')) . '&type=json');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+
+        $res_data = json_decode($res, true);
+        if (!$res_data || !isset($res_data['pay_status']) || $res_data['pay_status'] != 'Successful') {
+            flash(translate('Payment could not be verified with payment gateway.'))->error();
+            return redirect()->route('cart');
+        }
+
         if ($payment_type == 'cart_payment') {
             return (new CheckoutController)->checkout_done($request->opt_b, json_encode($request->all()));
         }

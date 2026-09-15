@@ -41,6 +41,9 @@ class PurchaseHistoryController extends Controller
     public function purchase_history_details($id)
     {
         $order = Order::findOrFail(decrypt($id));
+        if ($order->user_id != Auth::id() && (!Auth::user() || !in_array(Auth::user()->user_type, ['admin', 'staff']))) {
+            abort(403, 'Unauthorized action.');
+        }
         $order->delivery_viewed = 1;
         $order->payment_status_viewed = 1;
         $order->save();
@@ -116,6 +119,9 @@ class PurchaseHistoryController extends Controller
         }
 
         $order = Order::findOrFail(decrypt($id));
+        if ($order->user_id != $user_id && (!Auth::user() || !in_array(Auth::user()->user_type, ['admin', 'staff']))) {
+            abort(403, 'Unauthorized action.');
+        }
         $msgs = [];
         $tax = 0;
         $data['user_id'] = $user_id;

@@ -152,39 +152,80 @@ class SslcommerzController extends Controller
 
     public function success(Request $request)
     {
-        //echo "Transaction is Successful";
-
         $sslc = new SSLCommerz();
-        #Start to received these value from session. which was saved in index function.
         $tran_id = $request->value_a;
-        #End to received these value from session. which was saved in index function.
         $payment = json_encode($request->all());
 
-        if(isset($request->value_c)){
-            if($request->value_c == 'cart_payment'){
-                return (new CheckoutController)->checkout_done($request->value_b, $payment);
-            }
-            elseif ($request->value_c == 'wallet_payment') {
-                $data['amount'] = $request->value_b;
-                $data['payment_method'] = 'sslcommerz';
-                Auth::login(User::find($request->value_d));
+        if(!isset($request->value_c)){
+            flash(translate('Invalid payment data.'))->error();
+            return redirect()->route('home');
+        }
 
-                return (new WalletController)->wallet_payment_done($data, $payment);
+        $amount = 0;
+        if($request->value_c == 'cart_payment'){
+            $combined_order = CombinedOrder::find($request->value_b);
+            if (!$combined_order) {
+                flash(translate('Order not found.'))->error();
+                return redirect()->route('home');
             }
-            elseif ($request->value_c == 'customer_package_payment') {
-                $data['customer_package_id'] = $request->value_b;
-                $data['payment_method'] = 'sslcommerz';
-                Auth::login(User::find($request->value_d));
+            $amount = $combined_order->grand_total;
+        }
+        elseif ($request->value_c == 'wallet_payment') {
+            $amount = (float)$request->value_b;
+        }
+        elseif ($request->value_c == 'customer_package_payment') {
+            $customer_package = CustomerPackage::find($request->value_b);
+            $amount = $customer_package ? $customer_package->amount : 0;
+        }
+        elseif ($request->value_c == 'seller_package_payment') {
+            $seller_package = SellerPackage::find($request->value_b);
+            $amount = $seller_package ? $seller_package->amount : 0;
+        }
 
-                return (new CustomerPackageController)->purchase_payment_done($data, $payment);
-            }
-            elseif ($request->value_c == 'seller_package_payment') {
-                $data['seller_package_id'] = $request->value_b;
-                $data['payment_method'] = 'sslcommerz';
-                Auth::login(User::find($request->value_d));
+        // Validate transaction with SSLCommerz server before honoring payment
+        if (!$request->has('val_id') || !$sslc->orderValidate($tran_id, $amount, "BDT", $request->all())) {
+            flash(translate('Payment validation failed.'))->error();
+            return redirect()->route('home');
+        }
 
-                return (new SellerPackageController)->purchase_payment_done(json_decode($request->value_b), $payment);
+        if($request->value_c == 'cart_payment'){
+            return (new CheckoutController)->checkout_done($request->value_b, $payment);
+        }
+        elseif ($request->value_c == 'wallet_payment') {
+            $data['amount'] = $request->value_b;
+            $data['payment_method'] = 'sslcommerz';
+            if ($request->filled('value_d')) {
+                $user = User::find($request->value_d);
+                if ($user) {
+                    Auth::login($user);
+                }
             }
+
+            return (new WalletController)->wallet_payment_done($data, $payment);
+        }
+        elseif ($request->value_c == 'customer_package_payment') {
+            $data['customer_package_id'] = $request->value_b;
+            $data['payment_method'] = 'sslcommerz';
+            if ($request->filled('value_d')) {
+                $user = User::find($request->value_d);
+                if ($user) {
+                    Auth::login($user);
+                }
+            }
+
+            return (new CustomerPackageController)->purchase_payment_done($data, $payment);
+        }
+        elseif ($request->value_c == 'seller_package_payment') {
+            $data['seller_package_id'] = $request->value_b;
+            $data['payment_method'] = 'sslcommerz';
+            if ($request->filled('value_d')) {
+                $user = User::find($request->value_d);
+                if ($user) {
+                    Auth::login($user);
+                }
+            }
+
+            return (new SellerPackageController)->purchase_payment_done(json_decode($request->value_b), $payment);
         }
     }
 
