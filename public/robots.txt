@@ -1,4 +1,3 @@
 User-agent: *
 Disallow:
-
-Sitemap: https://bapjan.com/sitemap.xml
+Sitemap: http://cafedepasta.softsasi.com/sitemap.xml
