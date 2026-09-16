@@ -16,12 +16,23 @@
                             @php $slider_images = json_decode(get_setting('home_slider_images'), true);  @endphp
                             @foreach ($slider_images as $key => $value)
                                 <div class="carousel-box">
-                                    <a href="{{ json_decode(get_setting('home_slider_links'), true)[$key] }}">
-                                        <!-- Image -->
-                                        <img class="d-block mw-100 img-fit overflow-hidden h-sm-auto h-md-320px h-lg-460px overflow-hidden"
-                                            src="{{ uploaded_asset($slider_images[$key]) }}"
-                                            alt="{{ env('APP_NAME')}} promo"
-                                            onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder-rect.jpg') }}';">
+                                    <a href="{{ isset(json_decode(get_setting('home_slider_links'), true)[$key]) ? json_decode(get_setting('home_slider_links'), true)[$key] : 'javascript:void(0)' }}">
+                                        @php
+                                            $upload_item = \App\Models\Upload::find($slider_images[$key]);
+                                            $file_ext = $upload_item ? strtolower($upload_item->extension) : '';
+                                            $is_video = in_array($file_ext, ['mp4', 'webm', 'mov', 'ogg']);
+                                        @endphp
+                                        @if($is_video)
+                                            <video class="d-block w-100 h-sm-auto h-md-320px h-lg-460px object-fit-cover" autoplay muted loop playsinline poster="{{ static_asset('assets/img/placeholder-rect.jpg') }}">
+                                                <source src="{{ uploaded_asset($slider_images[$key]) }}" type="video/{{ $file_ext == 'mov' ? 'mp4' : $file_ext }}">
+                                            </video>
+                                        @else
+                                            <!-- Image -->
+                                            <img class="d-block mw-100 img-fit overflow-hidden h-sm-auto h-md-320px h-lg-460px overflow-hidden"
+                                                src="{{ uploaded_asset($slider_images[$key]) }}"
+                                                alt="{{ env('APP_NAME')}} promo"
+                                                onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder-rect.jpg') }}';">
+                                        @endif
                                     </a>
                                 </div>
                             @endforeach
@@ -150,9 +161,20 @@
                 <div class="aiz-carousel gutters-16 overflow-hidden arrow-inactive-none arrow-dark arrow-x-15" data-items="{{ count($banner_1_imags) }}" data-xxl-items="{{ count($banner_1_imags) }}" data-xl-items="{{ count($banner_1_imags) }}" data-lg-items="{{ $data_md }}" data-md-items="{{ $data_md }}" data-sm-items="1" data-xs-items="1" data-arrows="true" data-dots="false">
                     @foreach ($banner_1_imags as $key => $value)
                         <div class="carousel-box overflow-hidden hov-scale-img">
-                            <a href="{{ json_decode(get_setting('home_banner1_links'), true)[$key] }}" class="d-block text-reset overflow-hidden">
-                                <img src="{{ static_asset('assets/img/placeholder-rect.jpg') }}" data-src="{{ uploaded_asset($value) }}" 
-                                alt="{{ env('APP_NAME') }} promo" class="img-fluid lazyload w-100 has-transition" onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder-rect.jpg') }}';">
+                            <a href="{{ isset(json_decode(get_setting('home_banner1_links'), true)[$key]) ? json_decode(get_setting('home_banner1_links'), true)[$key] : 'javascript:void(0)' }}" class="d-block text-reset overflow-hidden">
+                                @php
+                                    $b1_upload = \App\Models\Upload::find($value);
+                                    $b1_ext = $b1_upload ? strtolower($b1_upload->extension) : '';
+                                    $b1_is_video = in_array($b1_ext, ['mp4', 'webm', 'mov', 'ogg']);
+                                @endphp
+                                @if($b1_is_video)
+                                    <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline poster="{{ static_asset('assets/img/placeholder-rect.jpg') }}">
+                                        <source src="{{ uploaded_asset($value) }}" type="video/{{ $b1_ext == 'mov' ? 'mp4' : $b1_ext }}">
+                                    </video>
+                                @else
+                                    <img src="{{ static_asset('assets/img/placeholder-rect.jpg') }}" data-src="{{ uploaded_asset($value) }}" 
+                                    alt="{{ env('APP_NAME') }} promo" class="img-fluid lazyload w-100 has-transition" onerror="this.onerror=null;this.src='{{ static_asset('assets/img/placeholder-rect.jpg') }}';">
+                                @endif
                             </a>
                         </div>
                     @endforeach
