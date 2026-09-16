@@ -33,3 +33,4 @@ install.zip
 /nbproject
 /public/app-translations
 public/uploads.zip
+*.sql
