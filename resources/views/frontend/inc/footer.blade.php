@@ -456,7 +456,7 @@
 </footer>
 
 <!-- Mobile bottom nav -->
-<div class="aiz-mobile-bottom-nav d-xl-none fixed-bottom border-top border-sm-bottom border-sm-left border-sm-right mx-auto mb-sm-2" style="background-color: rgb(255 255 255 / 90%)!important;">
+<div class="aiz-mobile-bottom-nav d-xl-none fixed-bottom border-top border-sm-bottom border-sm-left border-sm-right mx-auto mb-sm-2">
     <div class="row align-items-center gutters-5">
         <!-- Home -->
         <div class="col">
@@ -470,7 +470,7 @@
             </a>
         </div>
 
-        <!-- Categories -->
+        <!-- Categories / Menu -->
         <div class="col">
             <a href="{{ route('categories.all') }}" class="text-secondary d-block text-center pb-2 pt-3 {{ areActiveRoutes(['categories.all'],'svg-active')}}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
@@ -481,7 +481,7 @@
                       <path id="Path_2920" data-name="Path 2920" d="M125.213,18a3.5,3.5,0,1,0,3.5,3.5,3.5,3.5,0,0,0-3.5-3.5m0,6a2.5,2.5,0,1,1,2.5-2.5,2.5,2.5,0,0,1-2.5,2.5" transform="translate(-3495.144 593)" fill="#91919c"/>
                     </g>
                 </svg>
-                <span class="d-block mt-1 fs-10 fw-600 text-reset {{ areActiveRoutes(['categories.all'],'text-primary')}}">{{ translate('Categories') }}</span>
+                <span class="d-block mt-1 fs-10 fw-600 text-reset {{ areActiveRoutes(['categories.all'],'text-primary')}}">{{ translate('Menu') }}</span>
             </a>
         </div>
         @php
@@ -493,7 +493,7 @@
             $count = (isset($cart) && count($cart)) ? count($cart) : 0;
         @endphp
         <div class="col-auto">
-            <a href="{{ route('cart') }}" class="text-secondary d-block text-center pb-2 pt-3 px-3 {{ areActiveRoutes(['cart'],'svg-active')}}">
+            <a href="{{ route('cart') }}" class="d-block text-center pb-2 pt-3 px-3 {{ $count > 0 ? 'cart-nav-btn' : 'text-secondary' }} {{ areActiveRoutes(['cart'],'svg-active')}}">
                 <span class="d-inline-block position-relative px-2">
                     <svg id="Group_25499" data-name="Group 25499" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="16.001" height="16" viewBox="0 0 16.001 16">
                         <defs>
@@ -508,7 +508,7 @@
                         </g>
                     </svg>
                     @if($count > 0)
-                        <span class="badge badge-sm badge-dot badge-circle badge-primary position-absolute absolute-top-right" style="right: 5px;top: -2px;"></span>
+                        <span class="badge badge-sm badge-dot badge-circle badge-warning position-absolute absolute-top-right" style="right: 5px;top: -2px;"></span>
                     @endif
                 </span>
                 <span class="d-block mt-1 fs-10 fw-600 text-reset {{ areActiveRoutes(['cart'],'text-primary')}}">
